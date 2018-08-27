@@ -66,6 +66,7 @@ public class AddressBook {
      * =========================================================================
      */
     private static final String MESSAGE_ADDED = "New person added: %1$s, Phone: %2$s, Email: %3$s";
+    private static final String MESSAGE_EXIST_PERSON = "Person already exist. Name: %1$s, Phone: %2$s, Email: %3$s";
     private static final String MESSAGE_ADDRESSBOOK_CLEARED = "Address book has been cleared!";
     private static final String MESSAGE_COMMAND_HELP = "%1$s: %2$s";
     private static final String MESSAGE_COMMAND_HELP_PARAMETERS = "\tParameters: %1$s";
@@ -426,8 +427,25 @@ public class AddressBook {
 
         // add the person as specified
         final String[] personToAdd = decodeResult.get();
+
+        // check if person exist in address book
+        if (personExist(personToAdd)) {
+            return getMessageForAddPersonExist(personToAdd);
+        }
+
         addPersonToAddressBook(personToAdd);
         return getMessageForSuccessfulAddPerson(personToAdd);
+    }
+
+    private static boolean personExist(String[] addedPerson) {
+        String name = getNameFromPerson(addedPerson);
+        for (String[] record : getAllPersonsInAddressBook()) {
+            String nameInBook = getNameFromPerson(record);
+            if (nameInBook.equals(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -439,6 +457,18 @@ public class AddressBook {
      */
     private static String getMessageForSuccessfulAddPerson(String[] addedPerson) {
         return String.format(MESSAGE_ADDED,
+                getNameFromPerson(addedPerson), getPhoneFromPerson(addedPerson), getEmailFromPerson(addedPerson));
+    }
+
+    /**
+     * Constructs a feedback message for a failed add person command execution due to existing record in address book.
+     *
+     * @see #executeAddPerson(String)
+     * @param addedPerson person to be added but failed
+     * @return failed add person feedback message
+     */
+    private static String getMessageForAddPersonExist(String[] addedPerson) {
+        return String.format(MESSAGE_EXIST_PERSON,
                 getNameFromPerson(addedPerson), getPhoneFromPerson(addedPerson), getEmailFromPerson(addedPerson));
     }
 
